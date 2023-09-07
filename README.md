@@ -1,7 +1,7 @@
 # DeepLearning-Fundamentals
 ## Deep Neural Network Layers and Functions
 
-This repository contains a collection of custom-built deep neural network layers, activation functions, loss functions, and a high-level neural network implementation. Additionally, it includes implementations of cross-correlation methods with various padding modes, pooling methods (including Max Pooling, Average Pooling, and Global Average Pooling). With these components, you can create and train neural networks from scratch. The code provided is designed to help you understand the inner workings of deep learning models and serve as a foundation for building more complex networks.
+This repository contains a collection of custom-built deep neural network layers with forward and backward propagations for each layer, activation functions, loss functions, and neural network implementations. Additionally, it includes implementations of cross-correlation methods with various padding modes, pooling methods (including Max Pooling, Average Pooling, and Global Average Pooling). With these components, you can create and train neural networks from scratch. The code provided is designed to help you understand the inner workings of deep learning models and serve as a foundation for building more complex networks.
 
 ## Table of Contents
 
