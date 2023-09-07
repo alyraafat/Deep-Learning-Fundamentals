@@ -53,7 +53,7 @@ The `Conv2DLayer` implements a 2D convolutional layer with customizable kernel s
 
 ### Dropout Layer
 
-The `DropoutLayer` introduces dropout regularization during training to prevent overfitting.
+The `DropoutLayer` introduces dropout regularization for dense layers during training to prevent overfitting.
 
 ### Flatten Layer
 
