@@ -8,7 +8,7 @@ This repository contains a collection of custom-built deep neural network layers
 - [Layers](#layers)
   - [Dense Layer](#dense-layer)
   - [Activation Layer](#activation-layer)
-  - [Pooling Layers](#pooling-layers)
+  - [Pooling Layers (Max and Average)](#pooling-layers)
   - [Conv2D Layer](#conv2d-layer)
   - [Dropout Layer](#dropout-layer)
   - [Flatten Layer](#flatten-layer)
