@@ -1,0 +1,10 @@
+__pycache__/
+gpu_support/
+.ipynb_checkpoints/
+.vscode/
+.pytest_cache/
+
+testing_cpp_funcs.ipynb
+
+
+x.py
