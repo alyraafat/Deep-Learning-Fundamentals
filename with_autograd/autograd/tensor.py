@@ -247,3 +247,6 @@ class Tensor:
         from .ops import _split
         return _split(self, indices_or_sections, axis)
 
+    def pad(self, pad_width: tuple[tuple[int, int]], constant_values: Number=0) -> 'Tensor':
+        from .ops import _pad
+        return _pad(self, pad_width, constant_values)

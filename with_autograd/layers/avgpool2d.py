@@ -5,7 +5,7 @@ from .layer import Layer
 import math 
 class AvgPool2D(Layer):
     def __init__(self, pool_size: Union[int, Tuple[int, int]], strides: Union[int, Tuple[int, int]], padding: str = 'valid'):
-        super(AvgPool2D, self).__init__()
+        super(MaxPool2D, self).__init__()
         self.pool_size = pool_size if isinstance(pool_size, tuple) else (pool_size, pool_size)
         self.strides = strides if isinstance(strides, tuple) else (strides, strides)
         self.padding = padding
@@ -30,15 +30,29 @@ class AvgPool2D(Layer):
         if self.padding == 'same':
             out_height = ((height - 1) // self.strides[0]) + 1
             out_width = ((width - 1) // self.strides[1]) + 1
-        else:
+            pad_h = max((out_height - 1) * self.strides[0] + self.pool_size[0] - height, 0)
+            pad_w = max((out_width - 1) * self.strides[1] + self.pool_size[1] - width, 0)
+            self.pad_top = pad_h // 2
+            self.pad_bottom = pad_h - self.pad_top
+            self.pad_left = pad_w // 2
+            self.pad_right = pad_w - self.pad_left
+        else: # valid
             out_height = ((height-self.pool_size[0])//self.strides[0]) + 1
             out_width = ((width-self.pool_size[1])//self.strides[1]) + 1
         return out_height, out_width
     
     def apply_pools(self, inp: Tensor) -> Tensor:
-        x = np.arange(start=0, stop=inp.shape[0],step=self.strides[0])
-        y = np.arange(start=0, stop=inp.shape[1],step=self.strides[1])
+        if self.padding == 'same':
+            inp_padded = inp.pad(pad_width=( 
+                                 (self.pad_top, self.pad_bottom), 
+                                 (self.pad_left, self.pad_right), 
+                                ),constant_values=0)
+        else: # valid
+            inp_padded = inp
+        x = np.arange(start=0, stop=inp_padded.shape[0]-self.pool_size[0]+1,step=self.strides[0])
+        y = np.arange(start=0, stop=inp_padded.shape[1]-self.pool_size[1]+1,step=self.strides[1])
         # mask = []
+        # print(f'inp_padded: {inp_padded.shape}, out_height: {self.out_height}, out_width: {self.out_width}')
         output = Parameter(np.zeros(shape=(self.out_height,self.out_width)))
         z = 0
         for i in x:
