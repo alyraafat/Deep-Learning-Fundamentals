@@ -552,3 +552,18 @@ def _split(x: Tensor, indices_or_sections: Union[int, list[int]], axis: int) -> 
             name=f'split_{x.name}_{idx}'
         ))
     return tensors
+
+def _pad(x: Tensor, pad_width: tuple[tuple[int, int]], constant_values: Union[int, float]) -> Tensor:
+    """pad x"""
+    depends_on = []
+    if x.requires_grad:
+        def grad_fn(grad: np.ndarray) -> np.ndarray:
+            slices = tuple(slice(pad_width[i][0], x.shape[i] + pad_width[i][0]) for i in range(x.data.ndim))
+            return grad[slices]
+        depends_on.append(Dependency(tensor=x, grad_fn=grad_fn))
+    return Tensor(
+        data=np.pad(x.data, pad_width=pad_width, mode='constant', constant_values=constant_values),
+        requires_grad=x.requires_grad,
+        depends_on=depends_on,
+        name=f'pad_{x.name}'
+    )
