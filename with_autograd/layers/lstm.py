@@ -20,6 +20,9 @@ class LSTM(Layer):
             self.lstm_unit_rev = LSTMUnit(self.hidden_size)
             self.lstm_unit_rev.initialize_parameters(input_shape=(batch_size, input_dim))
     
+    def build(self, input_shape: tuple):
+        self.initialize_parameters(input_shape)
+
     def forward_propagation(self, inp: Tensor, training: bool=True) -> Tensor:
         self.input = inp
         batch_size, seq_len, _ = inp.shape

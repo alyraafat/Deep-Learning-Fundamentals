@@ -272,10 +272,14 @@ def _tensor_mean(x: Tensor, axis: Union[int, tuple]) -> Tensor:
     depends_on = []
     if x.requires_grad:
         def grad_fn(grad: np.ndarray) -> np.ndarray:
-            reduction_size = np.prod([x.shape[ax] for ax in axis])
-            expanded_grad = np.expand_dims(grad, axis=axis)
-            for ax in sorted(axis):
-                expanded_grad = np.repeat(expanded_grad, x.shape[ax], axis=ax)
+            if axis is None:
+                reduction_size = x.data.size
+                expanded_grad = grad
+            else:
+                reduction_size = np.prod([x.shape[ax] for ax in axis])
+                expanded_grad = np.expand_dims(grad, axis=axis)
+                for ax in sorted(axis):
+                    expanded_grad = np.repeat(expanded_grad, x.shape[ax], axis=ax)
             return expanded_grad / reduction_size
         depends_on.append(Dependency(tensor=x, grad_fn=grad_fn))
     return Tensor(
