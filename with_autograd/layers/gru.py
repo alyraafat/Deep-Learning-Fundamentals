@@ -20,6 +20,9 @@ class GRU(Layer):
             self.gru_unit_rev = GRUUnit(self.hidden_size)
             self.gru_unit_rev.initialize_parameters(input_shape=(batch_size, input_dim))
 
+    def build(self, input_shape: tuple):
+        self.initialize_parameters(input_shape)
+    
     def forward_propagation(self, inp: Tensor, training: bool=True):
         self.input = inp
         batch_size, seq_len, _ = inp.shape
