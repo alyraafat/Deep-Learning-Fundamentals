@@ -445,7 +445,6 @@ def _maximum(x: Tensor, y: Tensor) -> Tensor:
         name=f'max_{x.name}_{y.name}'
     )
 
-# tested only in maxpool2d.py
 def _max(x: Tensor, axis: Union[int, tuple]) -> Tensor:
     """element-wise maximum along axis"""
     depends_on = []
@@ -478,7 +477,6 @@ def _max(x: Tensor, axis: Union[int, tuple]) -> Tensor:
         name=f'max_{x.name}'
     )
 
-# not tested
 def _min(x: Tensor, axis: Union[int, tuple]) -> Tensor:
     """element-wise minimum along axis"""
     depends_on = []
@@ -501,7 +499,6 @@ def _min(x: Tensor, axis: Union[int, tuple]) -> Tensor:
         name=f'min_{x.name}'
     )
 
-# not tested
 def _clamp(x: Tensor, min: Union[int, float], max: Union[int, float]) -> Tensor:
     """clamp x between min and max"""
     depends_on = []
@@ -516,22 +513,23 @@ def _clamp(x: Tensor, min: Union[int, float], max: Union[int, float]) -> Tensor:
         name=f'clamp_{x.name}'
     )
 
-# not tested
 def _split(x: Tensor, indices_or_sections: Union[int, list[int]], axis: int) -> list[Tensor]:
     """split x into multiple tensors"""
     if isinstance(indices_or_sections, int):
         split_indices = np.array_split(range(x.shape[axis]), indices_or_sections)
         indices_or_sections = [len(split_indices[i]) for i in range(len(split_indices))]
-        indices_or_sections = np.cumsum(indices_or_sections[:-1])
+        indices_or_sections = list(np.cumsum(indices_or_sections[:-1]))
+        indices_or_sections.append(x.shape[axis])
     else:
         # indices_or_sections = [np.array(idx) for idx in indices_or_sections]
         indices_or_sections = indices_or_sections + [x.shape[axis]]
+        
     data = np.split(x.data, indices_or_sections, axis=axis)
     tensors = []
     for idx, d in enumerate(data):
         depends_on = []
         if x.requires_grad:
-            def grad_fn(grad: np.ndarray, idx=idx) -> np.ndarray:
+            def grad_fn(grad: np.ndarray, idx: int=idx) -> np.ndarray:
                 grad_split = np.zeros_like(x.data)
                 if idx>0:
                     start_idx = indices_or_sections[idx-1]
