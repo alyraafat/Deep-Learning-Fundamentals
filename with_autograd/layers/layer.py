@@ -2,6 +2,7 @@ from autograd import Tensor, Module
 # Base class
 class Layer(Module):
     def __init__(self):
+        super(Layer, self).__init__()
         self.input = None
         self.output = None
         self.is_initialized = False

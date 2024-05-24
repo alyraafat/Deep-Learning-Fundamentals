@@ -13,12 +13,16 @@ class LSTM(Layer):
     def initialize_parameters(self, input_shape: tuple):
         self.is_initialized = True
         self.input_shape = input_shape
-        batch_size, _, input_dim = input_shape
+        batch_size, seq_len , input_dim = input_shape
         self.lstm_unit = LSTMUnit(self.hidden_size)
         self.lstm_unit.initialize_parameters(input_shape=(batch_size, input_dim))
+        self.output_shape = (batch_size, seq_len, self.hidden_size)
+        self.num_params = self.hidden_size * self.hidden_size * 4 + self.hidden_size * input_dim * 4 + self.hidden_size * 4
         if self.bidirectional:
             self.lstm_unit_rev = LSTMUnit(self.hidden_size)
             self.lstm_unit_rev.initialize_parameters(input_shape=(batch_size, input_dim))
+            self.output_shape = (batch_size, seq_len, 2*self.hidden_size)
+            self.num_params *= 2
     
     def build(self, input_shape: tuple):
         self.initialize_parameters(input_shape)

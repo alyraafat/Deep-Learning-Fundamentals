@@ -10,12 +10,14 @@ class FCLayer(Layer):
     
     def initialize_parameters(self,input_shape: tuple):
         self.is_initialized=True
+        self.input_shape=input_shape
         batch_size = input_shape[0]
         input_dim = input_shape[-1]
         self.input_dim=input_dim
         self.weights = Parameter(np.random.randn(input_dim,self.output_dim) / np.sqrt(input_dim + self.output_dim), name='weights')
         self.bias = Parameter(np.random.randn(1,self.output_dim) / np.sqrt(input_dim + self.output_dim), name='bias')
         self.num_params = np.prod(self.weights.shape) + np.prod(self.bias.shape)
+        self.output_shape = input_shape[:-1] + (self.output_dim,)
     
     def build(self, input_shape: tuple):
         self.initialize_parameters(input_shape)

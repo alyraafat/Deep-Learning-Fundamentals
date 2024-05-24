@@ -16,10 +16,14 @@ class LayerNorm(Layer):
         self.is_initialized = True
         self.input_shape = input_shape
         self.normalized_shape = input_shape[-self.D:]
+        self.num_params = 0
+        self.output_shape = input_shape
         if self.elementwise_affine:
             self.gamma = Parameter(ones(shape=self.normalized_shape))
+            self.num_params = np.prod([i for i in self.normalized_shape])
             if self.bias:
                 self.beta = Parameter(zeros(shape=self.normalized_shape))
+                self.num_params += np.prod([i for i in self.normalized_shape])
         
     def build(self, input_shape: tuple):
         self.input_shape = input_shape

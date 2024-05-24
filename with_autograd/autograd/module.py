@@ -5,6 +5,14 @@ from typing import Iterator
 
 
 class Module:
+
+    def __init__(self):
+        self._modules = []
+        
+    def add_module(self, name: str, module: 'Module'):
+        setattr(self, name, module)
+        self._modules.append((name, module))
+    
     def parameters(self) -> Iterator[Parameter]:
         for name, value in inspect.getmembers(self):
             if isinstance(value, Parameter):
@@ -36,3 +44,22 @@ class Module:
     
     def predict(self, input: Tensor) -> Tensor:
         return self.forward(input, training=False)
+    
+    def summary(self) -> None:
+        # print(self)
+        summary = []
+        # print(inspect.getmembers(self))
+        # for name, value in inspect.getmembers(self):
+        for name, module in self._modules:
+            if isinstance(module, Module):
+                summary.append({
+                    'name': module.__class__.__name__,
+                    'input shape': module.input_shape,
+                    'output shape': module.output_shape,
+                    'num params': module.num_params
+                })
+                nested_summary = module.summary()
+                if nested_summary:
+                    summary.extend(nested_summary)
+                
+        return summary

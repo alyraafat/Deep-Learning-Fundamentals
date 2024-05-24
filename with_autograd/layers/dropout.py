@@ -8,7 +8,10 @@ class DropoutLayer(Layer):
         self.p = 1-self.drop_rate
     
     def build(self, input_shape):
-        pass
+        self.is_initialized = True
+        self.input_shape = input_shape
+        self.output_shape = input_shape
+        self.num_params = 0
     
     def forward_propagation(self, inp, training: bool=True):
         self.input = inp

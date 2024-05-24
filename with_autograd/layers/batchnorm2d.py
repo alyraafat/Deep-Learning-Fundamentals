@@ -17,12 +17,15 @@ class BatchNorm2D(Layer):
         self.input_shape = input_shape
         channels = input_shape[-1]
         self.num_features = channels
+        self.num_params = 0
         if self.affine:
             self.gamma = Parameter(ones(shape=(self.num_features,)))
             self.beta = Parameter(zeros(shape=(self.num_features,)))
+            self.num_params = 2 * self.num_features
         if self.track_running_stats:
             self.running_mean = zeros(shape=(self.num_features,))
             self.running_var = ones(shape=(self.num_features,))
+        self.output_shape = input_shape
     
     def build(self, input_shape: tuple):
         self.input_shape = input_shape

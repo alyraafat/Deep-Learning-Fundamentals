@@ -11,13 +11,17 @@ class MaxPool2D(Layer):
         self.padding = padding
     
     def build(self, input_shape: Tuple[int, int, int, int]):
-        pass
+        self.is_initialized = True
+        batch_size, _, _, channels = input_shape
+        self.input_shape = input_shape
+        self.out_height, self.out_width = self.calculate_output_shape(input_shape)
+        self.num_params = 0
+        self.output_shape = (batch_size, self.out_height, self.out_width, channels)
 
     def forward_propagation(self, inp: Tensor, training: bool=True) -> Tensor:
         self.input = inp
         batch_size, height, width, channels = inp.shape
         self.input_pool = inp.reshape(batch_size, channels, height, width)
-        self.out_height, self.out_width = self.calculate_output_shape(inp.shape)
         output = Parameter(np.zeros(shape=(batch_size, channels, self.out_height, self.out_width)))
         for b in range(batch_size):
             for c in range(channels):
