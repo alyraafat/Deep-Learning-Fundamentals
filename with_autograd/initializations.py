@@ -15,3 +15,6 @@ def xavier_uniform_init(shape: tuple, hidden_size: int):
     k = 1.0 / hidden_size
     sqrt_k = np.sqrt(k)
     return np.random.uniform(-sqrt_k, sqrt_k, shape)
+
+def gaussian(shape: tuple) -> np.ndarray:
+    return np.random.normal(0, 1, shape)
