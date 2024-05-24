@@ -152,7 +152,7 @@ class Tensor:
         assert self.requires_grad, "called backward on non-requires-grad tensor"
 
         if grad is None and self.data.size == 1:
-            grad = Tensor(1.)
+            grad = Tensor(np.ones_like(self.data))
         elif grad is None:
             raise RuntimeError("grad must be specified for non-0-tensor")
         
@@ -187,9 +187,9 @@ class Tensor:
         from .ops import _reshape
         return _reshape(self, *shape)
 
-    def mean(self, axis: Union[int,tuple]=None) -> 'Tensor':
+    def mean(self, axis: Union[int,tuple]=None, keepdims: bool=False) -> 'Tensor':
         from .ops import _tensor_mean
-        return _tensor_mean(self, axis=axis)
+        return _tensor_mean(self, axis=axis, keepdims=keepdims)
     
     @property
     def T(self) -> 'Tensor':
@@ -250,3 +250,11 @@ class Tensor:
     def pad(self, pad_width: tuple[tuple[int, int]], constant_values: Number=0) -> 'Tensor':
         from .ops import _pad
         return _pad(self, pad_width, constant_values)
+
+    def var(self, axis: Union[int, tuple], ddof: int=0, keepdims: bool=True):
+        from .ops import _var
+        return _var(self, axis, ddof, keepdims)
+
+    def std(self, axis: Union[int, tuple], ddof: int=0, keepdims: bool=True):
+        from .ops import _std
+        return _std(self, axis, ddof, keepdims)

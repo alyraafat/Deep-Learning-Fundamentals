@@ -8,7 +8,7 @@ class Layer(Module):
         self.num_params = 0
         
     # initializes the weights and biases of the layer
-    def build(self, input_shape):
+    def build(self, input_shape: tuple):
         raise NotImplementedError
     
     # computes the output Y of a layer for a given input X

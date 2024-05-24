@@ -14,7 +14,7 @@ def _tensor_sum(x: Tensor) -> Tensor:
         data=x.data.sum(),
         requires_grad=x.requires_grad,
         depends_on=[Dependency(tensor=x, grad_fn=lambda grad: grad * np.ones_like(x.data))],
-        name=f'{x.name}_sum'
+        name=f'sum({x.name})'
     )
 
 def _adjust_grad_for_broadcasting(grad: np.ndarray, z: Tensor) -> np.ndarray:
@@ -53,7 +53,7 @@ def _add(x: Tensor, y: Tensor) -> Tensor:
         data = x.data + y.data,
         requires_grad = x.requires_grad or y.requires_grad,
         depends_on = depends_on,
-        name=f'{x.name}_add_{y.name}'
+        name=f'add({x.name} + {y.name})'
     )
 
 def _mul(x: Tensor, y: Tensor) -> Tensor:
@@ -80,7 +80,7 @@ def _mul(x: Tensor, y: Tensor) -> Tensor:
         data = x.data * y.data,
         requires_grad = x.requires_grad or y.requires_grad,
         depends_on = depends_on,
-        name=f'{x.name}_mul_{y.name}'
+        name=f'mul({x.name} * {y.name})'
     )
 
 def _neg(x: Tensor) -> Tensor:
@@ -92,7 +92,7 @@ def _neg(x: Tensor) -> Tensor:
         data = -x.data,
         requires_grad = x.requires_grad,
         depends_on = depends_on,
-        name=f'neg_{x.name}'
+        name=f'neg({x.name})'
     )
 
 def _sub(x: Tensor, y: Tensor) -> Tensor:
@@ -128,7 +128,7 @@ def _matmul(x: Tensor, y: Tensor) -> Tensor:
         data=x.data @ y.data,
         requires_grad=x.requires_grad or y.requires_grad,
         depends_on=depends_on,
-        name=f'{x.name}_matmul_{y.name}'
+        name=f'matmul({x.name} @ {y.name})'
     )
 
 def _slice(x: Tensor, idxs) -> Tensor:
@@ -145,7 +145,7 @@ def _slice(x: Tensor, idxs) -> Tensor:
         data=x.data[idxs],
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'{x.name}_slice_{idxs}'
+        name=f'slice({x.name})'
     )
 
 def _power(x: Tensor, pow: Number) -> Tensor:
@@ -161,7 +161,7 @@ def _power(x: Tensor, pow: Number) -> Tensor:
         data=x.data**pow,
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'{x.name}_power_{pow}'
+        name=f'power({x.name})'
     )
 
 # def _div(x: Tensor, y: Tensor) -> Tensor:
@@ -210,7 +210,7 @@ def _concat(tensors: list[Tensor], axis: int) -> Tensor:
         data=np.concatenate(data_to_concat, axis=axis),
         requires_grad=requires_grad,
         depends_on=depends_on,
-        name=f'concat_{axis}'
+        name=f'concat({[t.name for t in tensors]})'
     )
 
 def _flatten(x: Tensor) -> Tensor:
@@ -226,7 +226,7 @@ def _flatten(x: Tensor) -> Tensor:
         data=x.data.flatten(),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'{x.name}_flatten'
+        name=f'flatten({x.name})'
     )
 
 def _reshape(x: Tensor, *shape) -> Tensor:
@@ -264,26 +264,30 @@ def _reshape(x: Tensor, *shape) -> Tensor:
         data=x.data.reshape(*shape),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'{x.name}_reshape_{shape}'
+        name=f'reshape({x.name})'
     )
 
-def _tensor_mean(x: Tensor, axis: Union[int, tuple]) -> Tensor:
+def _tensor_mean(x: Tensor, axis: Union[int, tuple], keepdims: bool=False) -> Tensor:
     """ calculate mean of tensor """
     depends_on = []
     if x.requires_grad:
-        def grad_fn(grad: np.ndarray) -> np.ndarray:
+        def grad_fn(grad: np.ndarray, axis: Union[int, tuple]=axis) -> np.ndarray:
             if axis is None:
                 reduction_size = x.data.size
                 expanded_grad = grad
             else:
+                if isinstance(axis, int):
+                    axis = (axis,)
                 reduction_size = np.prod([x.shape[ax] for ax in axis])
-                expanded_grad = np.expand_dims(grad, axis=axis)
+                expanded_grad = grad
+                if not keepdims:
+                    expanded_grad = np.expand_dims(expanded_grad, axis=axis)
                 for ax in sorted(axis):
                     expanded_grad = np.repeat(expanded_grad, x.shape[ax], axis=ax)
             return expanded_grad / reduction_size
         depends_on.append(Dependency(tensor=x, grad_fn=grad_fn))
     return Tensor(
-        data=np.mean(x.data, axis=axis),
+        data=np.mean(x.data, axis=axis, keepdims=keepdims),
         requires_grad=x.requires_grad,
         depends_on=depends_on
     )
@@ -300,7 +304,7 @@ def _transpose(x: Tensor) -> Tensor:
         data=x.data.T,
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'{x.name}_transpose'
+        name=f'transpose({x.name})'
     ) 
 
 def _set_item(x: Tensor, y: Tensor, idxs) -> Tensor:
@@ -318,7 +322,7 @@ def _set_item(x: Tensor, y: Tensor, idxs) -> Tensor:
         data= copied_data,
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'{x.name}_set_item_{idxs}'
+        name=f'setItem({x.name})'
     )
 
 def _log(x: Tensor) -> Tensor:
@@ -332,7 +336,7 @@ def _log(x: Tensor) -> Tensor:
         data=np.log(x.data),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'log_{x.name}'
+        name=f'log({x.name})'
     )
 
 def _exp(x: Tensor) -> Tensor:
@@ -346,7 +350,7 @@ def _exp(x: Tensor) -> Tensor:
         data=np.exp(x.data),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'exp_{x.name}'
+        name=f'exp({x.name})'
     )
 
 def _sqrt(x: Tensor) -> Tensor:
@@ -360,7 +364,7 @@ def _sqrt(x: Tensor) -> Tensor:
         data=np.sqrt(x.data),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'sqrt_{x.name}'
+        name=f'sqrt({x.name})'
     )
 
 def _abs(x: Tensor) -> Tensor:
@@ -374,7 +378,7 @@ def _abs(x: Tensor) -> Tensor:
         data=np.abs(x.data),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'abs_{x.name}'
+        name=f'abs({x.name})'
     )
 
 def _stack(tensors: list[Tensor], axis: int) -> Tensor:
@@ -394,7 +398,7 @@ def _stack(tensors: list[Tensor], axis: int) -> Tensor:
         data=np.stack(data_to_stack, axis=axis),
         requires_grad=requires_grad,
         depends_on=depends_on,
-        name=f'stack_{axis}'
+        name=f'stack({[t.name for t in tensors]})'
     )
 
 def _minimum(x: Tensor, y: Tensor) -> Tensor:
@@ -418,7 +422,7 @@ def _minimum(x: Tensor, y: Tensor) -> Tensor:
         data=np.minimum(x.data, y.data),
         requires_grad=x.requires_grad or y.requires_grad,
         depends_on=depends_on,
-        name=f'min_{x.name}_{y.name}'
+        name=f'min({x.name}/{y.name})'
     )
 
 def _maximum(x: Tensor, y: Tensor) -> Tensor:
@@ -442,7 +446,7 @@ def _maximum(x: Tensor, y: Tensor) -> Tensor:
         data=np.maximum(x.data, y.data),
         requires_grad=x.requires_grad or y.requires_grad,
         depends_on=depends_on,
-        name=f'max_{x.name}_{y.name}'
+        name=f'max({x.name}/{y.name})'
     )
 
 def _max(x: Tensor, axis: Union[int, tuple]) -> Tensor:
@@ -474,7 +478,7 @@ def _max(x: Tensor, axis: Union[int, tuple]) -> Tensor:
         data=np.max(x.data, axis=axis),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'max_{x.name}'
+        name=f'max({x.name})'
     )
 
 def _min(x: Tensor, axis: Union[int, tuple]) -> Tensor:
@@ -496,7 +500,7 @@ def _min(x: Tensor, axis: Union[int, tuple]) -> Tensor:
         data=np.min(x.data, axis=axis),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'min_{x.name}'
+        name=f'min({x.name})'
     )
 
 def _clamp(x: Tensor, min: Union[int, float], max: Union[int, float]) -> Tensor:
@@ -510,7 +514,7 @@ def _clamp(x: Tensor, min: Union[int, float], max: Union[int, float]) -> Tensor:
         data=np.clip(x.data, min, max),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'clamp_{x.name}'
+        name=f'clamp({x.name})'
     )
 
 def _split(x: Tensor, indices_or_sections: Union[int, list[int]], axis: int) -> list[Tensor]:
@@ -547,7 +551,7 @@ def _split(x: Tensor, indices_or_sections: Union[int, list[int]], axis: int) -> 
             data=d,
             requires_grad=x.requires_grad,
             depends_on=depends_on,
-            name=f'split_{x.name}_{idx}'
+            name=f'split({x.name})'
         ))
     return tensors
 
@@ -563,5 +567,37 @@ def _pad(x: Tensor, pad_width: tuple[tuple[int, int]], constant_values: Union[in
         data=np.pad(x.data, pad_width=pad_width, mode='constant', constant_values=constant_values),
         requires_grad=x.requires_grad,
         depends_on=depends_on,
-        name=f'pad_{x.name}'
+        name=f'pad({x.name})'
     )
+
+# not tested
+def _var(x: Tensor, axis: Union[int, tuple], ddof: int=0, keepdims: bool=True):
+    """ variance of tensor x """
+
+    depends_on = []
+    if x.requires_grad:
+        def grad_fn(grad: np.ndarray, axis: Union[int, tuple]=axis) -> np.ndarray:
+            if axis is None:
+                axis = tuple(range(x.data.ndim))
+            elif isinstance(axis, int):
+                axis = (axis,)
+            x_mean = np.mean(x.data, axis=axis, keepdims=True)
+            reduction_size = np.prod([x.shape[ax] for ax in axis])
+            expanded_grad = grad
+            # print(f'grad: {grad.shape}, grad: {grad}')
+            if not keepdims:
+                expanded_grad = np.expand_dims(expanded_grad, axis=axis)
+            for ax in sorted(axis):
+                expanded_grad = np.repeat(expanded_grad, x.shape[ax], axis=ax)
+            return expanded_grad * 2 * (x.data - x_mean) / (reduction_size - ddof)
+        depends_on.append(Dependency(tensor=x, grad_fn=grad_fn))
+    return Tensor(
+        data=np.var(x.data, axis=axis, ddof=ddof, keepdims=keepdims),
+        requires_grad=x.requires_grad,
+        depends_on=depends_on,
+        name=f"var({x.name})"
+    )
+
+# not tested
+def _std(x: Tensor, axis: Union[int, tuple], ddof: int=0, keepdims: bool=True):
+    return _sqrt(x=_var(x=x, axis=axis, ddof=ddof, keepdims=keepdims))

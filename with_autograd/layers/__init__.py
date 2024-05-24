@@ -10,3 +10,6 @@ from .maxpool2d import *
 from .avgpool2d import *
 from .lstm import *
 from .gru import *
+from .embedding import *
+from .batchnorm2d import *
+from .layernorm import *
