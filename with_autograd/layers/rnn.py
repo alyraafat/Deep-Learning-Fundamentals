@@ -48,6 +48,7 @@ class RNN(Layer):
         - input_size (int): The size of the input vector.
         """
         self.is_initialized = True
+        batch_size, seq_len, feature_dim = self.input_shape
         if self.init == 'glorot_uniform':
             self.w_hh = Parameter(glorot_uniform(self.hidden_size, self.hidden_size), name='w_hh')
             self.w_hx = Parameter(glorot_uniform(self.hidden_size,input_size), name='w_hx')
@@ -66,8 +67,10 @@ class RNN(Layer):
             self.b_h_back = Parameter(np.zeros((self.hidden_size,)), name='b_h_back')
         
         self.num_params = self.hidden_size * self.hidden_size + self.hidden_size * input_size + self.hidden_size
+        self.output_shape = (batch_size, seq_len, self.hidden_size)
         if self.bidirectional:
             self.num_params *= 2
+            self.output_shape = (batch_size, seq_len, 2*self.hidden_size)
 
     def build(self, input_shape):
         """

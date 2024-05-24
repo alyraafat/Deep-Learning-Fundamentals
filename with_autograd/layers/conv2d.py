@@ -44,14 +44,15 @@ class Conv2D(Layer):
             output_height = math.floor((input_height - self.kernel_size[0]) / self.strides[0] + 1) 
             output_width = math.floor((input_width - self.kernel_size[1]) / self.strides[1] + 1)
 
-        self.output_shape = (self.filters,output_height,output_width)
+        self.output_shape_for_conv = (self.filters,output_height,output_width)
         self.kernels_shape = (self.filters,self.kernel_size[0],self.kernel_size[1])
         self.kernels = Parameter(np.random.randn(*self.kernels_shape))
-        self.bias = Parameter(np.random.randn(*self.output_shape))
+        self.bias = Parameter(np.random.randn(*self.output_shape_for_conv))
         self.kernels_shape_for_summary = (self.filters,self.kernel_size[0],self.kernel_size[1],self.input_depth)
         # self.input_shape_for_summary = (input_height,input_width,input_depth)
         # self.output_shape_for_summary = (self.output_shape[1],self.output_shape[2],self.output_shape[0])
         self.num_params = np.prod(self.kernels.shape) + np.prod(self.bias.shape)
+        self.output_shape = (batch_size, output_height, output_width, self.filters)
     
     def build(self, input_shape: tuple):
         """
@@ -63,7 +64,7 @@ class Conv2D(Layer):
         self.input=inp
         batch_size, input_height, input_width, input_channels = inp.shape
         self.input_conv = inp.reshape(batch_size, input_channels,input_height,input_width)
-        self.output_conv = Parameter(np.zeros(shape=(batch_size, *self.output_shape)))
+        self.output_conv = Parameter(np.zeros(shape=(batch_size, *self.output_shape_for_conv)))
         for f in range(self.filters):
             for b in range(batch_size):
                 for c in range(input_channels):
@@ -80,7 +81,7 @@ class Conv2D(Layer):
     
     def cross_correlation(self, inp: Tensor, kernel: Tensor):
         kernel_size_h, kernel_size_w = kernel.shape
-        new_height, new_width = self.output_shape[1], self.output_shape[2]
+        new_height, new_width = self.output_shape_for_conv[1], self.output_shape_for_conv[2]
         # print(inp.shape)
         if self.padding == 'same':
             inp_padded = inp.pad(pad_width=( 

@@ -14,7 +14,10 @@ class ActivationLayer(Layer):
         self.activation = activation
         
     def build(self, input_shape):
-        pass
+        self.is_initialized = True
+        self.input_shape = input_shape
+        self.output_shape = input_shape
+        self.num_params = 0
 
     def forward_propagation(self, inp: Tensor, training=True) -> Tensor:
         """
